@@ -5,15 +5,13 @@ import java.util.List;
 public class User {
 
 	private String userName;
-	// use one of them
-	private List<Cell> passwords;
+
 	private HashMap<Domain, Password> map;
 
 	
 	public User(String userName, String metaFile) {
 		this.userName=userName;
 		ReadMetaFile(metaFile);
-		passwords = new ArrayList<User.Cell>();
 		map = new HashMap<Domain, Password>();
 	}
 
