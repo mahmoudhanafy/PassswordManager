@@ -6,13 +6,19 @@ import java.util.List;
 public class User {
 
 	private String userName;
-
+	private char[] masterPassword;
 	private HashMap<Domain, Password> map;
+	private boolean isLogIn = false;
 
-	public User(String userName, String metaFile) {
+	public User(String userName, char[] masterPassword) {
 		this.userName = userName;
-		ReadMetaFile(metaFile);
 		map = new HashMap<Domain, Password>();
+		this.masterPassword = masterPassword;
+	}
+
+	public boolean login() {
+		// TODO
+		return false;
 	}
 
 	private void ReadMetaFile(String metaFile) {
@@ -38,4 +44,8 @@ public class User {
 
 	}
 
+	public boolean addDomain(String domain, byte[] pass) throws Exception {
+		// TODO
+		return false;
+	}
 }
