@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class Domain {
+
+public class Domain  implements Serializable{
 
 	String eDomain;
 	

@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class Password {
+
+public class Password implements Serializable {
 
 	private byte[] ePassword ;
 	
