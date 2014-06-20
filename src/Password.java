@@ -17,9 +17,10 @@ public class Password implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -5074126984308457819L;
+	private static final int length = 32;
 	private byte[] ePassword;
-	private byte[] key, src, A;
-
+	private static final byte[] special = "$".getBytes();
+	private byte[] key="91945D3F4DCBEE0BF45EF52255F095A4".getBytes(), src="BECAF043B0A23D843194BA972C66DEBD".getBytes(), A="FA3BFD4806EB53FA".getBytes();
 	public Password(byte[] pass, boolean encrypted) throws InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchProviderException,
 			NoSuchPaddingException, InvalidAlgorithmParameterException,
@@ -29,7 +30,13 @@ public class Password implements Serializable {
 		if (encrypted)
 			ePassword = pass;
 		else {
-			ePassword = encrypte(pass);
+			
+			byte[] plainText = new byte[length];
+			for(int i=0;i<pass.length;i++)
+				plainText[i]=pass[i];
+			for(int i=pass.length;i<length;i++)
+				plainText[i] = special[0];
+			ePassword = encrypte(plainText);
 		}
 	}
 
@@ -81,6 +88,13 @@ public class Password implements Serializable {
 		// TODO
 
 		return decrypte();
+	}
+	
+	public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		Password pass = new Password("123756".getBytes(), false);
+		System.out.println(new String(pass.getPass()).length());
+		System.out.println(new String(special));
+		System.out.println(special.length);
 	}
 
 }
