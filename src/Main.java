@@ -20,6 +20,8 @@ public class Main {
 
 			if (newUser) {
 				user = new User(userName, masterPassword, true);
+				user = new User(userName,masterPassword,false);
+				user.login(masterPassword);
 				System.out.println("Created new User");
 				break;
 			}else{
