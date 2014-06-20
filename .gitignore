@@ -1,0 +1,8 @@
+.metadata
+
+# binary folders
+bin/*
+
+# java binary files
+*.class
+
