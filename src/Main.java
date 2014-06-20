@@ -58,8 +58,12 @@ public class Main {
 			switch (k) {
 			case 1:
 				byte[] password = user.getPassword(domainName);
+				if(password==null)
+				{
+					System.out.println("Domain Doesn't Exist");
+				}else{
 				System.out.println("Password is : " + new String(password));
-
+				}
 				break;
 			case 2:
 				System.out.println("Enter Old Password :");

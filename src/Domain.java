@@ -34,6 +34,27 @@ public class Domain implements Serializable , Comparable<Domain>{
 		}
 	}
 
+	
+	public byte[] getTag()
+	{
+		byte[] tag = new byte[Password.tagLength];
+		if(eDomain.length()>Password.tagLength)
+		{
+			tag = eDomain.substring(0, Password.tagLength).getBytes();
+			return tag;
+		}
+		if(eDomain.length()==Password.tagLength)
+			return eDomain.getBytes();
+		byte[] domain = eDomain.getBytes();
+		for(int i=0;i<domain.length;i++)
+		{
+			tag[i]=domain[i];
+		}
+		for(int i=domain.length;i<Password.tagLength;i++)
+			tag[i]=(byte)0;
+		
+		return tag;
+	}
 	public boolean authenticate() {
 		// TODO
 		return false;
@@ -86,11 +107,6 @@ public class Domain implements Serializable , Comparable<Domain>{
 		return res;
 	}
 	
-	public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		Domain dom = new Domain("www.google.com", false, "KEY");
-		System.out.println(dom.getEncrypted());
-		System.out.println(dom.getDomain("KEY "));
-	}
 
 	@Override
 	public int compareTo(Domain o) {

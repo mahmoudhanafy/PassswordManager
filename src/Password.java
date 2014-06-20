@@ -10,6 +10,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
@@ -27,7 +28,7 @@ public class Password implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -5074126984308457819L;
-	private static final int length = 32;
+	public static final int length = 32, tagLength = 32;
 	private byte[] ePassword, ivBytes;
 	private static final byte[] special = "$".getBytes();
 
@@ -42,10 +43,10 @@ public class Password implements Serializable {
 			ePassword = pass;
 		else {
 
-			byte[] plainText = new byte[length];
+			byte[] plainText = new byte[length+tagLength];
 			for (int i = 0; i < pass.length; i++)
 				plainText[i] = pass[i];
-			for (int i = pass.length; i < length; i++)
+			for (int i = pass.length; i < length+tagLength; i++)
 				plainText[i] = special[0];
 			ePassword = encrypte(plainText, key);
 		}
@@ -98,7 +99,15 @@ public class Password implements Serializable {
 			IllegalBlockSizeException, BadPaddingException {
 		// TODO
 
-		return decrypte(key);
+		byte[] decrypte = decrypte(key);
+		byte[] password =Arrays.copyOfRange(decrypte, tagLength, decrypte.length);
+		return password;
+	}
+	public byte[] getTag(byte[] key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException
+	{
+		byte[] decrypte = decrypte(key);
+		byte[] tag =Arrays.copyOfRange(decrypte, 0,tagLength);
+		return tag;
 	}
 
 	private static void writeObject(String directory, Object map) {
@@ -127,16 +136,5 @@ public class Password implements Serializable {
 		return map;
 	}
 
-	public static void main(String[] args) throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchProviderException,
-			NoSuchPaddingException, InvalidAlgorithmParameterException,
-			IllegalBlockSizeException, BadPaddingException,
-			ClassNotFoundException, IOException {
-		byte[] key = new byte[16];
-		for(int i=0;i<16;i++)
-			key[i]=(byte)i;
-		Password pass = new Password("Hello World".getBytes(), false, key);
-		System.out.println(new String(pass.decrypte(key)));
-	}
 
 }

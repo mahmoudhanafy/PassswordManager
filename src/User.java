@@ -9,13 +9,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -55,7 +62,10 @@ public class User {
 		}
 	}
 
-	public boolean login(String masterPassword) {
+	public boolean login(String masterPassword) throws InvalidKeyException,
+			NoSuchProviderException, NoSuchPaddingException,
+			InvalidAlgorithmParameterException, IllegalBlockSizeException,
+			BadPaddingException {
 		return isLogIn = checkPassword(masterPassword);
 	}
 
@@ -75,12 +85,6 @@ public class User {
 			// write the encrypted password to file
 			BufferedWriter bw = new BufferedWriter(new FileWriter(userName
 					+ masterPasswordFile));
-			System.out.println("Write User Password");
-			System.out.println(encreptedPassword[0]);
-			System.out.println(encreptedPassword[1]);
-			System.out.println(encreptedPassword[2]);
-			System.out.println(dom.getEncrypted());
-			System.out.println("***********************");
 
 			bw.write(encreptedPassword[0] + ":" + encreptedPassword[1] + ":"
 					+ dom.getEncrypted());
@@ -93,21 +97,33 @@ public class User {
 
 	}
 
-	private boolean checkPassword(String password) {
+	private boolean checkPassword(String password) throws InvalidKeyException,
+			NoSuchProviderException, NoSuchPaddingException,
+			InvalidAlgorithmParameterException, IllegalBlockSizeException,
+			BadPaddingException {
 		try {
 			String[] encryptedPassword = generateStorngPasswordHash(
 					noOfIterations, salt, password);
 
-			System.out.println("Check Password");
-			System.out.println(noOfIterations);
-			System.out.println(salt);
-			System.out.println(encryptedMasterPassword);
-			System.out.println(encryptedPassword[2]);
 			Domain dom = new Domain("PasswordManager", false,
 					encryptedPassword[2]);
-			System.out.println(dom.getEncrypted());
 			if (dom.getEncrypted().equals(encryptedMasterPassword)) {
 				encryptedMasterPassword = encryptedPassword[2];
+
+				Set<Domain> set = map.keySet();
+				ArrayList<Domain> toRemove = new ArrayList<Domain>();
+				for (Domain domain : set) {
+					Password pass = map.get(domain);
+					if (new String(domain.getTag()).equals(new String(pass
+							.getTag(adjustKey(encryptedMasterPassword)))) == false) {
+						System.out.println("Domain removed");
+						toRemove.add(domain);
+					}
+				}
+				for (Domain domain : toRemove) {
+					map.remove(domain);
+				}
+
 				return true;
 			}
 			return false;
@@ -130,6 +146,7 @@ public class User {
 			br.close();
 
 			map = (HashMap<Domain, Password>) readObject(mapFile);
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -179,8 +196,8 @@ public class User {
 		Set<Domain> set = map.keySet();
 		for (Domain domT : set) {
 			if (domT.compareTo(domain) == 0) {
-				return map.get(domT)
-						.getPass(adjustKey(encryptedMasterPassword));
+				return trim(map.get(domT)
+						.getPass(adjustKey(encryptedMasterPassword)));
 
 			}
 		}
@@ -200,9 +217,12 @@ public class User {
 				Password pass = map.get(domT);
 				if (Arrays.equals(oldPass,
 						trim(pass.getPass(adjustKey(encryptedMasterPassword))))) {
-					
-					map.put(domT, new Password(newPass, false,
-							adjustKey(encryptedMasterPassword)));
+
+					map.put(domT,
+							new Password(
+									(new String(domT.getTag()) + new String(
+											newPass)).getBytes(), false,
+									adjustKey(encryptedMasterPassword)));
 					writeObject(userName + mapFile, map);
 
 					return true;
@@ -238,7 +258,6 @@ public class User {
 
 		Domain domain = new Domain(dom, false, encryptedMasterPassword);
 
-		Set<Domain> set = map.keySet();
 		Domain domT = getDom(domain);
 		if (domT == null)
 			return false;
@@ -256,7 +275,8 @@ public class User {
 		// KEY = ??
 		Domain dom = new Domain(domain, false, encryptedMasterPassword);
 		if (getDom(dom) == null) {
-			Password password = new Password(pass, false,
+			String mixedPass = new String(dom.getTag()) + new String(pass);
+			Password password = new Password(mixedPass.getBytes(), false,
 					adjustKey(encryptedMasterPassword));
 			map.put(dom, password);
 			writeObject(userName + mapFile, map);
@@ -318,10 +338,5 @@ public class User {
 		return null;
 	}
 
-	public static void main(String[] args) {
-		User usr = new User("Zonkoly", "012", true);
-		User usr1 = new User("Zonkoly", "012", false);
-		usr1.login("012");
-		System.out.println(usr1.isLogIn);
-	}
+	
 }
