@@ -224,7 +224,7 @@ public class User {
 				encryptedMasterPassword.getBytes()));
 		writeObject(userName + mapFile, map);
 
-		return false;
+		return true;
 	}
 
 	private void writeObject(String directory, Object map) {
