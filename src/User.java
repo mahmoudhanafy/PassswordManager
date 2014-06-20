@@ -17,6 +17,7 @@ import java.util.HashMap;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 public class User {
 	private String errorMessage = "User Not Login";
@@ -55,6 +56,10 @@ public class User {
 
 	public boolean login(String masterPassword) {
 		return isLogIn = checkPassword(masterPassword);
+	}
+	
+	private byte[] toByteArray(String hex) {
+		return DatatypeConverter.parseHexBinary(hex);
 	}
 
 	private void writeUserPassword(String password) {
@@ -99,7 +104,7 @@ public class User {
 			Domain dom = new Domain("PasswordManager", false, encryptedPassword[2]);
 			System.out.println(dom.getEncrypted());
 			if (dom.getEncrypted().equals(encryptedMasterPassword)) {
-				encryptedPassword = encryptedPassword;
+				encryptedMasterPassword = encryptedPassword[2];
 				return true;
 			}
 			return false;
@@ -116,7 +121,7 @@ public class User {
 			String[] fields = s.split(":");
 
 			noOfIterations = Integer.parseInt(fields[0]);
-			salt = fields[1];
+			salt = new String(toByteArray(fields[1]));
 			encryptedMasterPassword = fields[2];
 
 			br.close();
