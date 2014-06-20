@@ -61,17 +61,22 @@ public class User {
 		try {
 			int iterations = (int) (Math.random() * 10000); // Generate random
 															// no of iterations
-			String encreptedPassword = generateStorngPasswordHash(iterations,
+			String[] encreptedPassword = generateStorngPasswordHash(iterations,
 					getSalt(), password);
 
-			System.out.println("Encrepted Password = " + encreptedPassword);
-			System.out.println("Encrepted Password length = "
-					+ encreptedPassword.length());
-			Domain dom = new Domain("PasswordManager", false, encreptedPassword);
+			Domain dom = new Domain("PasswordManager", false, encreptedPassword[2]);
 			// write the encrypted password to file
 			BufferedWriter bw = new BufferedWriter(new FileWriter(
 					userName+masterPasswordFile));
-			bw.write(dom.getEncrypted());
+			System.out.println("Write User Password");
+			System.out.println(encreptedPassword[0]);
+			System.out.println(encreptedPassword[1]);
+			System.out.println(encreptedPassword[2]);
+			System.out.println(dom.getEncrypted());
+			System.out.println("***********************");
+
+			
+			bw.write(encreptedPassword[0]+":"+ encreptedPassword[1]+":"+dom.getEncrypted());
 			bw.flush();
 			bw.close();
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException
@@ -83,9 +88,16 @@ public class User {
 
 	private boolean checkPassword(String password) {
 		try {
-			String encryptedPassword = generateStorngPasswordHash(
+			String[] encryptedPassword = generateStorngPasswordHash(
 					noOfIterations, salt, password);
-			Domain dom = new Domain("PasswordManager", false, encryptedPassword);
+			
+			System.out.println("Check Password");
+			System.out.println(noOfIterations);
+			System.out.println(salt);
+			System.out.println(encryptedMasterPassword);
+			System.out.println(encryptedPassword[2]);
+			Domain dom = new Domain("PasswordManager", false, encryptedPassword[2]);
+			System.out.println(dom.getEncrypted());
 			if (dom.getEncrypted().equals(encryptedMasterPassword)) {
 				encryptedPassword = encryptedPassword;
 				return true;
@@ -119,7 +131,7 @@ public class User {
 		}
 	}
 
-	private String generateStorngPasswordHash(int iterations, String saltt,
+	private String[] generateStorngPasswordHash(int iterations, String saltt,
 			String password) throws NoSuchAlgorithmException,
 			InvalidKeySpecException {
 		char[] chars = password.toCharArray();
@@ -129,7 +141,7 @@ public class User {
 		SecretKeyFactory skf = SecretKeyFactory
 				.getInstance("PBKDF2WithHmacSHA1");
 		byte[] hash = skf.generateSecret(spec).getEncoded();
-		return iterations + ":" + toHex(salt) + ":" + toHex(hash);
+		return new String[]{iterations + "",  toHex(salt), toHex(hash)};
 	}
 
 	private String getSalt() throws NoSuchAlgorithmException {
@@ -261,5 +273,7 @@ public class User {
 	public static void main(String[] args) {
 		User usr = new User("Zonkoly", "012", true);
 		User usr1 = new User("Zonkoly", "012", false);
+		usr1.login("012");
+		System.out.println(usr1.isLogIn);
 	}
 }
