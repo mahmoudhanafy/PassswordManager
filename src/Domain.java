@@ -3,6 +3,10 @@ import java.io.Serializable;
 
 public class Domain  implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7126057441259313915L;
 	String eDomain;
 	
 	public Domain(String domain, boolean encrypted) {
