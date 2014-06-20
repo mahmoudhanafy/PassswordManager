@@ -180,7 +180,9 @@ public class User {
 		if (!isLogIn)
 			throw new Exception(errorMessage);
 
-		map.put(new Domain(domain, true), new Password(pass, false));
+		//TODO 
+		// KEY = ?? 
+		map.put(new Domain(domain, true,"KEY"), new Password(pass, false));
 		writeObject(userName + mapFile, map);
 
 		return false;
