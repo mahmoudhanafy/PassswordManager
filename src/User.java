@@ -30,8 +30,8 @@ public class User {
 	private int noOfIterations;
 
 	/**
-	 * if it is the first time to create this user account should enter the password value else enter any value to
-	 * password field
+	 * if it is the first time to create this user account should enter the
+	 * password value else enter any value to password field
 	 * 
 	 * @param userName
 	 * @param password
@@ -48,7 +48,8 @@ public class User {
 
 		} else {
 			// load meta data for that user
-			ReadMetaFile(this.userName + masterPasswordFile, this.userName + mapFile);
+			ReadMetaFile(this.userName + masterPasswordFile, this.userName
+					+ mapFile);
 		}
 	}
 
@@ -58,14 +59,21 @@ public class User {
 
 	private void writeUserPassword(String password) {
 		try {
-			int iterations = (int) (Math.random() * 10000); // Generate random no of iterations
-			String encreptedPassword = generateStorngPasswordHash(iterations, getSalt(), password);
+			int iterations = (int) (Math.random() * 10000); // Generate random
+															// no of iterations
+			String encreptedPassword = generateStorngPasswordHash(iterations,
+					getSalt(), password);
 
+			System.out.println("Encrepted Password = "+encreptedPassword);
+			System.out.println("Encrepted Password length = "+encreptedPassword.length());
+			Domain dom = new Domain("PasswordManager", false, encreptedPassword);
 			// write the encrypted password to file
-			BufferedWriter bw = new BufferedWriter(new FileWriter(masterPasswordFile));
-			bw.write(encreptedPassword);
+			BufferedWriter bw = new BufferedWriter(new FileWriter(
+					masterPasswordFile));
+			bw.write(dom.getEncrypted());
 			bw.close();
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException e) {
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| IOException e) {
 			e.printStackTrace();
 		}
 
@@ -73,8 +81,14 @@ public class User {
 
 	private boolean checkPassword(String password) {
 		try {
-			String encryptedPassword = generateStorngPasswordHash(noOfIterations, salt, password);
-			return encryptedPassword.equals(encryptedMasterPassword);
+			String encryptedPassword = generateStorngPasswordHash(
+					noOfIterations, salt, password);
+			Domain dom = new Domain("PasswordManager", false, encryptedPassword);
+			if (dom.getEncrypted().equals(encryptedMasterPassword)) {
+				encryptedPassword = encryptedPassword;
+				return true;
+			}
+			return false;
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			e.printStackTrace();
 		}
@@ -103,13 +117,15 @@ public class User {
 		}
 	}
 
-	private String generateStorngPasswordHash(int iterations, String saltt, String password)
-			throws NoSuchAlgorithmException, InvalidKeySpecException {
+	private String generateStorngPasswordHash(int iterations, String saltt,
+			String password) throws NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		char[] chars = password.toCharArray();
 		byte[] salt = saltt.getBytes();
 
 		PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
-		SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		SecretKeyFactory skf = SecretKeyFactory
+				.getInstance("PBKDF2WithHmacSHA1");
 		byte[] hash = skf.generateSecret(spec).getEncoded();
 		return iterations + ":" + toHex(salt) + ":" + toHex(hash);
 	}
@@ -137,20 +153,23 @@ public class User {
 			throw new Exception(errorMessage);
 
 		if (map.containsKey(domain)) {
-			return map.get(domain).getPass();
+			//TODO
+			return map.get(domain).getPass(encryptedMasterPassword.getBytes());
 		} else {
 			return null;
 		}
 	}
 
-	public boolean modifyPassword(Domain domain, byte[] oldPass, byte[] newPass) throws Exception {
+	public boolean modifyPassword(Domain domain, byte[] oldPass, byte[] newPass)
+			throws Exception {
 		if (!isLogIn)
 			throw new Exception(errorMessage);
 
 		if (map.containsKey(domain)) {
 			Password pass = map.get(domain);
-			if (Arrays.equals(oldPass, pass.getPass())) {
-				map.put(domain, new Password(newPass, false));
+			//TODO 
+			if (Arrays.equals(oldPass, pass.getPass(encryptedMasterPassword.getBytes()))) {
+				map.put(domain, new Password(newPass, false,encryptedMasterPassword.getBytes()));
 				writeObject(userName + mapFile, map);
 
 				return true;
@@ -180,9 +199,9 @@ public class User {
 		if (!isLogIn)
 			throw new Exception(errorMessage);
 
-		//TODO 
-		// KEY = ?? 
-		map.put(new Domain(domain, true,"KEY"), new Password(pass, false));
+		// TODO
+		// KEY = ??
+		map.put(new Domain(domain, true, "KEY"), new Password(pass, false,encryptedMasterPassword.getBytes()));
 		writeObject(userName + mapFile, map);
 
 		return false;
@@ -204,12 +223,19 @@ public class User {
 		}
 	}
 
-	private Object readObject(String directory) throws IOException, ClassNotFoundException {
+	private Object readObject(String directory) throws IOException,
+			ClassNotFoundException {
 		FileInputStream fin = new FileInputStream(directory);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 		Object map = ois.readObject();
+		
+		//TODO Step 7
 		ois.close();
 
 		return map;
+	}
+	public static void main(String[] args) {
+		User usr = new User("Zonkoly", "012", true);
+		
 	}
 }
