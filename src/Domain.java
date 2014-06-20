@@ -10,7 +10,7 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-public class Domain implements Serializable {
+public class Domain implements Serializable, Comparable<Domain> {
 
 	/**
 	 * 
@@ -95,5 +95,10 @@ public class Domain implements Serializable {
 
 		}
 
+	}
+
+	@Override
+	public int compareTo(Domain d) {
+		return eDomain.compareTo(d.eDomain);
 	}
 }
